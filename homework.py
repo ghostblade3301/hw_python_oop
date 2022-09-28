@@ -9,8 +9,7 @@ class InfoMessage:
                               'Длительность: {duration:.3f} ч.; '
                               'Дистанция: {distance:.3f} км; '
                               'Ср. скорость: {speed:.3f} км/ч; '
-                              'Потрачено ккал: {calories:.3f}.'
-                              )
+                              'Потрачено ккал: {calories:.3f}.')
     training_type: str
     duration: float
     distance: float
@@ -86,7 +85,9 @@ class SportsWalking(Training):
     def get_spent_calories(self) -> float:
         coeff_calorie_1 = 0.035
         coeff_calorie_2 = 0.029
-        return ((coeff_calorie_1 * self.weight + (self.get_mean_speed()**2 // self.height) * coeff_calorie_2 * self.weight) * self.duration)
+        return ((coeff_calorie_1 * self.weight
+                 + (self.get_mean_speed()**2 // self.height)
+                 * coeff_calorie_2 * self.weight) * self.duration)
 
 
 class Swimming(Training):
