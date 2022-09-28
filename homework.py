@@ -26,19 +26,16 @@ class InfoMessage:
         ))
 
 
+@dataclass
 class Training:
     """Базовый класс тренировки."""
-    LEN_STEP = 0.65
-    M_IN_KM = 1000
+    LEN_STEP: ClassVar[float] = 0.65
+    M_IN_KM: ClassVar[float] = 1000
+    H_IN_M: ClassVar[float] = 60
 
-    def __init__(self,
-                 action: int,
-                 duration: float,
-                 weight: float,
-                 ) -> None:
-        self.action = action
-        self.duration = duration
-        self.weight = weight
+    action: int
+    duration: float
+    weight: float
 
     def get_distance(self) -> float:
         """Получить дистанцию в км."""
@@ -50,11 +47,11 @@ class Training:
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        pass
+        raise NotImplementedError
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
-        training_type = self.__class__.__name__
+        training_type = type(self).__name__
         duration = self.duration
         distance = self.get_distance()
         speed = self.get_mean_speed()
@@ -65,44 +62,45 @@ class Training:
 class Running(Training):
     """Тренировка: бег."""
     """Получить количество затраченных калорий."""
+    COEFF_CALORIE_1: ClassVar[int] = 18
+    COEFF_CALORIE_2: ClassVar[int] = 20
+
     def get_spent_calories(self) -> float:
-        coeff_calorie_1 = 18
-        coeff_calorie_2 = 20
-        return ((coeff_calorie_1 * self.get_mean_speed() - coeff_calorie_2)
-                * self.weight / self.M_IN_KM * self.duration * 60)
+        return ((self.COEFF_CALORIE_1 * self.get_mean_speed()
+                 - self.COEFF_CALORIE_2) * self.weight
+                / self.M_IN_KM * self.duration * self.H_IN_M)
 
 
+@dataclass
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
-    def __init__(self,
-                 action: int,
-                 duration: float,
-                 weight: float,
-                 height: float) -> None:
-        super().__init__(action, duration, weight)
-        self.height = height
+    COEFF_CALORIE_1: ClassVar[float] = 0.035
+    COEFF_CALORIE_2: ClassVar[float] = 0.029
+
+    action: int
+    duration: float
+    weight: float
+    height: float
 
     def get_spent_calories(self) -> float:
-        coeff_calorie_1 = 0.035
-        coeff_calorie_2 = 0.029
-        return ((coeff_calorie_1 * self.weight
+        return ((self.COEFF_CALORIE_1 * self.weight
                  + (self.get_mean_speed()**2 // self.height)
-                 * coeff_calorie_2 * self.weight) * self.duration * 60)
+                 * self.COEFF_CALORIE_2 * self.weight)
+                * self.duration * self.H_IN_M)
 
 
+@dataclass
 class Swimming(Training):
     """Тренировка: плавание."""
-    LEN_STEP = 1.38
+    LEN_STEP: ClassVar[float] = 1.38
+    COEFF_CALORIE_1: ClassVar[float] = 1.1
+    COEFF_CALORIE_2: ClassVar[float] = 2
 
-    def __init__(self,
-                 action: int,
-                 duration: float,
-                 weight: float,
-                 length_pool: float,
-                 count_pool: float) -> None:
-        super().__init__(action, duration, weight)
-        self.length_pool = length_pool
-        self.count_pool = count_pool
+    action: int
+    duration: float
+    weight: float
+    length_pool: float
+    count_pool: float
 
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения."""
@@ -110,9 +108,9 @@ class Swimming(Training):
                 / self.M_IN_KM / self.duration)
 
     def get_spent_calories(self) -> float:
-        coeff_calorie_1 = 1.1
         speed = self.get_mean_speed()
-        return (speed + coeff_calorie_1) * 2 * self.weight
+        return ((speed + self.COEFF_CALORIE_1)
+                * self.COEFF_CALORIE_2 * self.weight)
 
 
 def read_package(workout_type: str, data: list) -> Training:
@@ -120,6 +118,8 @@ def read_package(workout_type: str, data: list) -> Training:
     codes: Dict[str, Type[Training]] = {'SWM': Swimming,
                                         'RUN': Running,
                                         'WLK': SportsWalking}
+    if workout_type not in codes:
+        raise Exception("Error in workout type")
     return codes[workout_type](*data)
 
 
