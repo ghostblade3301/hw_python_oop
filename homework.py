@@ -47,7 +47,7 @@ class Training:
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        raise NotImplementedError
+        raise NotImplementedError("Function must be enabled from children")
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
@@ -77,9 +77,6 @@ class SportsWalking(Training):
     COEFF_CALORIE_1: ClassVar[float] = 0.035
     COEFF_CALORIE_2: ClassVar[float] = 0.029
 
-    action: int
-    duration: float
-    weight: float
     height: float
 
     def get_spent_calories(self) -> float:
@@ -96,9 +93,6 @@ class Swimming(Training):
     COEFF_CALORIE_1: ClassVar[float] = 1.1
     COEFF_CALORIE_2: ClassVar[float] = 2
 
-    action: int
-    duration: float
-    weight: float
     length_pool: float
     count_pool: float
 
@@ -119,7 +113,8 @@ def read_package(workout_type: str, data: list) -> Training:
                                         'RUN': Running,
                                         'WLK': SportsWalking}
     if workout_type not in codes:
-        raise Exception("Error in workout type")
+        raise Exception(f'Error! Incorrect code: {workout_type}!'
+                        ' Available codes: SMM, RUN, WLK')
     return codes[workout_type](*data)
 
 
